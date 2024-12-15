@@ -100,7 +100,7 @@
   <div id="countdown"></div>
   <div id="background"></div>
   <canvas id="fireworksCanvas"></canvas>
-  <div id="message">¡Feliz Cumpleaños Arturo 🎂!</div>
+  <div id="message">¡Feliz Cumpleaños Arturito 🎂!<br> Te queremos mucho...</div>
 
   <script>
     const countdownElement = document.getElementById('countdown');
@@ -143,6 +143,7 @@
         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
         countdownElement.innerHTML = `
+          <div><strong>No te emociones, todavía faltan:</strong></div>
           <div><strong>${days}</strong> días</div>
           <div><strong>${hours}</strong> horas</div>
           <div><strong>${minutes}</strong> minutos</div>
