@@ -11,9 +11,6 @@
       background: black;
       color: white;
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       height: 100vh;
     }
 
@@ -22,10 +19,15 @@
       top: 10%;
       font-size: 2em;
       text-align: center;
+      color: white;
+      z-index: 2;
     }
 
     canvas {
-      display: none; /* Oculta el canvas hasta que llegue el momento */
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
     #message {
@@ -60,23 +62,27 @@
 <body>
   <div id="countdown"></div>
   <canvas id="fireworksCanvas"></canvas>
+  <canvas id="tinkerCanvas"></canvas>
   <div id="message">Feliz Cumpleaños Arturo 🎂</div>
 
   <script>
     const countdownElement = document.getElementById('countdown');
-    const canvas = document.getElementById('fireworksCanvas');
-    const ctx = canvas.getContext('2d');
+    const fireworksCanvas = document.getElementById('fireworksCanvas');
+    const tinkerCanvas = document.getElementById('tinkerCanvas');
+    const ctx = fireworksCanvas.getContext('2d');
+    const tinkerCtx = tinkerCanvas.getContext('2d');
     const message = document.getElementById('message');
 
     const targetDate = new Date('2024-12-14T00:00:00');
     let fireworksStarted = false;
+
+    const sound = new Audio('https://www.soundjay.com/button/beep-07.wav'); // URL del sonido de fuegos artificiales
 
     function updateCountdown() {
       const now = new Date();
       const difference = targetDate - now;
 
       if (difference <= 0) {
-        // Mostrar fuegos artificiales y mensaje de cumpleaños
         if (!fireworksStarted) {
           startFireworks();
           countdownElement.style.display = 'none';
@@ -99,18 +105,20 @@
 
     function startFireworks() {
       fireworksStarted = true;
-      canvas.style.display = 'block';
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      animate();
+      fireworksCanvas.style.display = 'block';
+      fireworksCanvas.width = window.innerWidth;
+      fireworksCanvas.height = window.innerHeight;
+      tinkerCanvas.width = window.innerWidth;
+      tinkerCanvas.height = window.innerHeight;
 
-      // Animación del mensaje de cumpleaños
+      animateFireworks();
+      animateTinker();
       message.style.animation = 'floatUp 4s ease-out forwards';
     }
 
     setInterval(updateCountdown, 1000);
 
-    // Fireworks code (sin cambios significativos)
+    const fireworks = [];
     const colors = ['#ff0040', '#00ff80', '#0080ff', '#ffff00', '#ff8000', '#ff00ff'];
 
     class Firework {
@@ -145,6 +153,7 @@
         for (let i = 0; i < particleCount; i++) {
           this.particles.push(new Particle(this.x, this.y, this.color));
         }
+        sound.play(); // Reproducir sonido
       }
 
       draw() {
@@ -185,17 +194,15 @@
       }
     }
 
-    const fireworks = [];
-
-    function animate() {
+    function animateFireworks() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
 
       if (Math.random() < 0.05) {
         fireworks.push(new Firework(
-          Math.random() * canvas.width,
-          canvas.height,
-          Math.random() * canvas.height / 2,
+          Math.random() * fireworksCanvas.width,
+          fireworksCanvas.height,
+          Math.random() * fireworksCanvas.height / 2,
           colors[Math.floor(Math.random() * colors.length)]
         ));
       }
@@ -208,13 +215,42 @@
         }
       });
 
-      requestAnimationFrame(animate);
+      requestAnimationFrame(animateFireworks);
     }
 
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    // Tinkerbell animation
+    const tinkerParticles = [];
+
+    function animateTinker() {
+      tinkerCtx.clearRect(0, 0, tinkerCanvas.width, tinkerCanvas.height);
+
+      // Generate a new particle
+      if (Math.random() < 0.1) {
+        tinkerParticles.push({
+          x: Math.random() * tinkerCanvas.width,
+          y: Math.random() * tinkerCanvas.height,
+          radius: Math.random() * 4 + 1,
+          life: 50,
+          opacity: 1
+        });
+      }
+
+      // Update and draw particles
+      tinkerParticles.forEach((particle, index) => {
+        particle.opacity -= 0.02;
+        particle.life--;
+        if (particle.life <= 0) {
+          tinkerParticles.splice(index, 1);
+        } else {
+          tinkerCtx.beginPath();
+          tinkerCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+          tinkerCtx.fillStyle = `rgba(255, 255, 100, ${particle.opacity})`;
+          tinkerCtx.fill();
+        }
+      });
+
+      requestAnimationFrame(animateTinker);
+    }
   </script>
 </body>
 </html>
