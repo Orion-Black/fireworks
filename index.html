@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fireworks</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #countdown {
+      position: absolute;
+      top: 10%;
+      font-size: 2em;
+      text-align: center;
+    }
+
+    canvas {
+      display: none; /* Oculta el canvas hasta que llegue el momento */
+    }
+
+    #message {
+      display: none;
+      position: absolute;
+      bottom: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 500px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      font-size: 2em;
+      font-weight: bold;
+      color: black;
+      border-radius: 10px;
+      animation: floatUp 4s ease-out forwards;
+    }
+
+    @keyframes floatUp {
+      from {
+        bottom: -200px;
+      }
+      to {
+        bottom: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="countdown"></div>
+  <canvas id="fireworksCanvas"></canvas>
+  <div id="message">Feliz Cumpleaños Arturo 🎂</div>
+
+  <script>
+    const countdownElement = document.getElementById('countdown');
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
+    const message = document.getElementById('message');
+
+    const targetDate = new Date('2024-12-14T00:00:00');
+    let fireworksStarted = false;
+
+    function updateCountdown() {
+      const now = new Date();
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        // Mostrar fuegos artificiales y mensaje de cumpleaños
+        if (!fireworksStarted) {
+          startFireworks();
+          countdownElement.style.display = 'none';
+          message.style.display = 'block';
+        }
+      } else {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        countdownElement.innerHTML = `
+          <div><strong>${days}</strong> días</div>
+          <div><strong>${hours}</strong> horas</div>
+          <div><strong>${minutes}</strong> minutos</div>
+          <div><strong>${seconds}</strong> segundos</div>
+        `;
+      }
+    }
+
+    function startFireworks() {
+      fireworksStarted = true;
+      canvas.style.display = 'block';
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      animate();
+
+      // Animación del mensaje de cumpleaños
+      message.style.animation = 'floatUp 4s ease-out forwards';
+    }
+
+    setInterval(updateCountdown, 1000);
+
+    // Fireworks code (sin cambios significativos)
+    const colors = ['#ff0040', '#00ff80', '#0080ff', '#ffff00', '#ff8000', '#ff00ff'];
+
+    class Firework {
+      constructor(x, y, targetY, color) {
+        this.x = x;
+        this.y = y;
+        this.targetY = targetY;
+        this.color = color;
+        this.particles = [];
+        this.exploded = false;
+      }
+
+      update() {
+        if (!this.exploded) {
+          this.y -= 4;
+          if (this.y <= this.targetY) {
+            this.explode();
+          }
+        }
+
+        this.particles.forEach((particle, index) => {
+          particle.update();
+          if (particle.life <= 0) {
+            this.particles.splice(index, 1);
+          }
+        });
+      }
+
+      explode() {
+        this.exploded = true;
+        const particleCount = 100;
+        for (let i = 0; i < particleCount; i++) {
+          this.particles.push(new Particle(this.x, this.y, this.color));
+        }
+      }
+
+      draw() {
+        if (!this.exploded) {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+
+        this.particles.forEach(particle => particle.draw());
+      }
+    }
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 3 + 1;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = Math.random() * 4 + 2;
+        this.life = Math.random() * 60 + 40;
+      }
+
+      update() {
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.speed *= 0.98;
+        this.life--;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    const fireworks = [];
+
+    function animate() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (Math.random() < 0.05) {
+        fireworks.push(new Firework(
+          Math.random() * canvas.width,
+          canvas.height,
+          Math.random() * canvas.height / 2,
+          colors[Math.floor(Math.random() * colors.length)]
+        ));
+      }
+
+      fireworks.forEach((firework, index) => {
+        firework.update();
+        firework.draw();
+        if (firework.exploded && firework.particles.length === 0) {
+          fireworks.splice(index, 1);
+        }
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
