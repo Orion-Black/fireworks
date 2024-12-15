@@ -3,36 +3,73 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fireworks</title>
+  <title>Happy Birthday AR2D2</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: black;
-      color: white;
       font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       height: 100vh;
     }
 
     #countdown {
       position: absolute;
-      top: 10%;
-      font-size: 2em;
+      z-index: 10;
       text-align: center;
       color: white;
-      z-index: 2;
+      font-size: 3em;
+      font-weight: bold;
     }
 
-    canvas {
-      display: none;
+    #background {
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    .blur-light {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: moveLight 6s infinite ease-in-out;
+      background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 80%);
+    }
+
+    @keyframes moveLight {
+      0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 0.5;
+        transform: translate(100vw, 100vh) scale(1.5);
+      }
+      100% {
+        transform: translate(-50vw, -50vh) scale(0.5);
+        opacity: 0.2;
+      }
+    }
+
+    canvas {
+      display: none; /* Oculta el canvas hasta que llegue el momento */
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 7;
     }
 
     #message {
       display: none;
       position: absolute;
+      z-index: 10;
       bottom: -200px;
       left: 50%;
       transform: translateX(-50%);
@@ -61,28 +98,39 @@
 </head>
 <body>
   <div id="countdown"></div>
+  <div id="background"></div>
   <canvas id="fireworksCanvas"></canvas>
-  <canvas id="tinkerCanvas"></canvas>
-  <div id="message">Feliz Cumpleaños Arturo 🎂</div>
+  <div id="message">¡Feliz Cumpleaños Arturo 🎂!</div>
 
   <script>
     const countdownElement = document.getElementById('countdown');
-    const fireworksCanvas = document.getElementById('fireworksCanvas');
-    const tinkerCanvas = document.getElementById('tinkerCanvas');
-    const ctx = fireworksCanvas.getContext('2d');
-    const tinkerCtx = tinkerCanvas.getContext('2d');
+    const canvas = document.getElementById('fireworksCanvas');
+    const ctx = canvas.getContext('2d');
     const message = document.getElementById('message');
+    const background = document.getElementById('background');
 
     const targetDate = new Date('2024-12-14T00:00:00');
     let fireworksStarted = false;
 
-    const sound = new Audio('https://www.soundjay.com/button/beep-07.wav'); // URL del sonido de fuegos artificiales
+    // Crear animación de luces borrosas
+    for (let i = 0; i < 20; i++) {
+      const light = document.createElement('div');
+      light.classList.add('blur-light');
+      light.style.width = `${Math.random() * 200 + 100}px`;
+      light.style.height = light.style.width;
+      light.style.top = `${Math.random() * 100}vh`;
+      light.style.left = `${Math.random() * 100}vw`;
+      light.style.background = `radial-gradient(circle, rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255},0.5) 0%, transparent 80%)`;
+      background.appendChild(light);
+    }
 
+    // Actualizar cuenta regresiva
     function updateCountdown() {
       const now = new Date();
       const difference = targetDate - now;
 
       if (difference <= 0) {
+        // Mostrar fuegos artificiales y mensaje de cumpleaños
         if (!fireworksStarted) {
           startFireworks();
           countdownElement.style.display = 'none';
@@ -103,22 +151,25 @@
       }
     }
 
+    // Comenzar fuegos artificiales
     function startFireworks() {
       fireworksStarted = true;
-      fireworksCanvas.style.display = 'block';
-      fireworksCanvas.width = window.innerWidth;
-      fireworksCanvas.height = window.innerHeight;
-      tinkerCanvas.width = window.innerWidth;
-      tinkerCanvas.height = window.innerHeight;
+      canvas.style.display = 'block';
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      animate();
 
-      animateFireworks();
-      animateTinker();
+      // Animación del mensaje de cumpleaños
       message.style.animation = 'floatUp 4s ease-out forwards';
     }
 
-    setInterval(updateCountdown, 1000);
+    // Código para el sonido
+    function playSound() {
+      const audio = new Audio('https://[TU-GITHUB-URL]/firework-sound.mp3');
+      audio.play();
+    }
 
-    const fireworks = [];
+    // Fuegos artificiales
     const colors = ['#ff0040', '#00ff80', '#0080ff', '#ffff00', '#ff8000', '#ff00ff'];
 
     class Firework {
@@ -149,11 +200,11 @@
 
       explode() {
         this.exploded = true;
+        playSound(); // Reproduce el sonido cuando explota
         const particleCount = 100;
         for (let i = 0; i < particleCount; i++) {
           this.particles.push(new Particle(this.x, this.y, this.color));
         }
-        sound.play(); // Reproducir sonido
       }
 
       draw() {
@@ -194,15 +245,17 @@
       }
     }
 
-    function animateFireworks() {
+    const fireworks = [];
+
+    function animate() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       if (Math.random() < 0.05) {
         fireworks.push(new Firework(
-          Math.random() * fireworksCanvas.width,
-          fireworksCanvas.height,
-          Math.random() * fireworksCanvas.height / 2,
+          Math.random() * canvas.width,
+          canvas.height,
+          Math.random() * canvas.height / 2,
           colors[Math.floor(Math.random() * colors.length)]
         ));
       }
@@ -215,42 +268,15 @@
         }
       });
 
-      requestAnimationFrame(animateFireworks);
+      requestAnimationFrame(animate);
     }
 
-    // Tinkerbell animation
-    const tinkerParticles = [];
+    setInterval(updateCountdown, 1000);
 
-    function animateTinker() {
-      tinkerCtx.clearRect(0, 0, tinkerCanvas.width, tinkerCanvas.height);
-
-      // Generate a new particle
-      if (Math.random() < 0.1) {
-        tinkerParticles.push({
-          x: Math.random() * tinkerCanvas.width,
-          y: Math.random() * tinkerCanvas.height,
-          radius: Math.random() * 4 + 1,
-          life: 50,
-          opacity: 1
-        });
-      }
-
-      // Update and draw particles
-      tinkerParticles.forEach((particle, index) => {
-        particle.opacity -= 0.02;
-        particle.life--;
-        if (particle.life <= 0) {
-          tinkerParticles.splice(index, 1);
-        } else {
-          tinkerCtx.beginPath();
-          tinkerCtx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-          tinkerCtx.fillStyle = `rgba(255, 255, 100, ${particle.opacity})`;
-          tinkerCtx.fill();
-        }
-      });
-
-      requestAnimationFrame(animateTinker);
-    }
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
   </script>
 </body>
 </html>
