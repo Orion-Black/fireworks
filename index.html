@@ -109,7 +109,15 @@
     const message = document.getElementById('message');
     const background = document.getElementById('background');
 
-    const targetDate = new Date('2024-12-15T00:00:00');
+    const now = new Date();
+    const currentYear = now.getFullYear();
+
+    // Configurar la fecha de cumpleaños dinámicamente
+    let targetDate = new Date(`${currentYear}-12-15T00:00:00`);
+    if (now > targetDate) {
+      targetDate = new Date(`${currentYear + 1}-12-15T00:00:00`);
+    }
+
     let fireworksStarted = false;
 
     // Crear animación de luces borrosas
@@ -123,47 +131,33 @@
       light.style.background = `radial-gradient(circle, rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255},0.5) 0%, transparent 80%)`;
       background.appendChild(light);
     }
-// Obtener la fecha de hoy
-const now = new Date();
-const currentYear = now.getFullYear();
 
-// Configurar la fecha de cumpleaños sin importar el año
-let targetDate = new Date(`${currentYear}-12-15T00:00:00`);
+    function updateCountdown() {
+      const now = new Date();
+      const difference = targetDate - now;
 
-// Si la fecha ya pasó este año, usar el próximo año
-if (now > targetDate) {
-  targetDate = new Date(`${currentYear + 1}-12-15T00:00:00`);
-}
+      if (difference <= 0) {
+        if (!fireworksStarted) {
+          startFireworks();
+          countdownElement.style.display = 'none';
+          message.style.display = 'block';
+        }
+      } else {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-// Actualizar cuenta regresiva
-function updateCountdown() {
-  const now = new Date();
-  const difference = targetDate - now;
-
-  if (difference <= 0) {
-    // Mostrar fuegos artificiales y mensaje de cumpleaños
-    if (!fireworksStarted) {
-      startFireworks();
-      countdownElement.style.display = 'none';
-      message.style.display = 'block';
+        countdownElement.innerHTML = `
+          <div><strong>No te emociones, todavía faltan:</strong></div>
+          <div><strong>${days}</strong> días</div>
+          <div><strong>${hours}</strong> horas</div>
+          <div><strong>${minutes}</strong> minutos</div>
+          <div><strong>${seconds}</strong> segundos</div>
+        `;
+      }
     }
-  } else {
-    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-    countdownElement.innerHTML = `
-      <div><strong>No te emociones, todavía faltan:</strong></div>
-      <div><strong>${days}</strong> días</div>
-      <div><strong>${hours}</strong> horas</div>
-      <div><strong>${minutes}</strong> minutos</div>
-      <div><strong>${seconds}</strong> segundos</div>
-    `;
-  }
-}
-
-    // Comenzar fuegos artificiales
     function startFireworks() {
       fireworksStarted = true;
       canvas.style.display = 'block';
@@ -175,13 +169,11 @@ function updateCountdown() {
       message.style.animation = 'floatUp 4s ease-out forwards';
     }
 
-    // Código para el sonido
     function playSound() {
       const audio = new Audio("https://orion-black.github.io/fireworks/Explosion.wav");
       audio.play();
     }
 
-    // Fuegos artificiales
     const colors = ['#ff0040', '#00ff80', '#0080ff', '#ffff00', '#ff8000', '#ff00ff'];
 
     class Firework {
@@ -212,9 +204,8 @@ function updateCountdown() {
 
       explode() {
         this.exploded = true;
-        playSound(); // Reproduce el sonido cuando explota
-        const particleCount = 100;
-        for (let i = 0; i < particleCount; i++) {
+        playSound();
+        for (let i = 0; i < 100; i++) {
           this.particles.push(new Particle(this.x, this.y, this.color));
         }
       }
